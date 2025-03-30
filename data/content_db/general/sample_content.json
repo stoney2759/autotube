@@ -1,0 +1,82 @@
+[
+    {
+      "theme": "travel",
+      "title_template": "Top 5 Hidden Gems in ${location} That Tourists Miss",
+      "description_template": "Discover these amazing secret spots in ${location} that most tourists never see! 🌍✈️ #travel #${location} #shorts #hiddengems",
+      "keywords": ["travel", "hidden gems", "tourism", "vacation", "shorts"],
+      "image_prompts": [
+        "Beautiful scenic view of hidden landmark in ${location}, photorealistic, high quality",
+        "Secret beach in ${location} with crystal clear water, no tourists, sunset, dramatic sky",
+        "Hidden alleyway with local architecture in ${location}, atmospheric lighting",
+        "Undiscovered natural landscape in ${location}, pristine condition, sweeping vista",
+        "Local restaurant in ${location} with authentic food, warm interior lighting"
+      ],
+      "location": "Paris",
+      "mood": "upbeat",
+      "used": false
+    },
+    {
+      "theme": "tech",
+      "title_template": "This ${gadget} Trick Will Save You Hours",
+      "description_template": "Learn this amazing ${gadget} hack that most people don't know about! 💻 #tech #${gadget} #lifehack #shorts",
+      "keywords": ["tech", "gadget", "lifehack", "technology", "shorts"],
+      "image_prompts": [
+        "Close up of ${gadget} with glowing screen in dark room, high-tech, dramatic lighting",
+        "Person using ${gadget} efficiently, motion blur on hands, focus on screen",
+        "Before and after comparison of ${gadget} organization, clean minimal design",
+        "${gadget} with custom modifications, detailed close-up, professional lighting",
+        "Person looking amazed while using ${gadget}, reaction shot, bright lighting"
+      ],
+      "gadget": "smartphone",
+      "mood": "energetic",
+      "used": false
+    },
+    {
+      "theme": "cooking",
+      "title_template": "You've Been Cooking ${food} Wrong Your Entire Life",
+      "description_template": "This simple technique will transform how you make ${food} forever! 🍳 #cooking #${food} #foodhack #shorts",
+      "keywords": ["cooking", "recipe", "food", "kitchen", "shorts"],
+      "image_prompts": [
+        "Professional chef preparing ${food} in restaurant kitchen, action shot, steam rising",
+        "Close up of ${food} being cooked perfectly, sizzling, appetizing colors",
+        "Before and after comparison of ${food} preparation methods, dramatic difference",
+        "Finished ${food} dish plated beautifully, studio lighting, food photography",
+        "Person reacting with amazement to tasting perfectly cooked ${food}, emotional"
+      ],
+      "food": "pasta",
+      "mood": "upbeat",
+      "used": false
+    },
+    {
+      "theme": "fitness",
+      "title_template": "One ${exercise} Variation That Builds Muscle Fast",
+      "description_template": "Try this ${exercise} technique to see faster results! 💪 #fitness #workout #${exercise} #gymmotivation #shorts",
+      "keywords": ["fitness", "workout", "exercise", "gym", "shorts"],
+      "image_prompts": [
+        "Fit athlete performing ${exercise} with perfect form, muscles defined, gym setting",
+        "Before and after transformation showing results of ${exercise}, side by side comparison",
+        "Close up of muscle activation during ${exercise}, anatomical detail, educational",
+        "Person performing ${exercise} variation with equipment, dynamic action shot",
+        "Fitness trainer demonstrating correct vs incorrect ${exercise} form, split screen"
+      ],
+      "exercise": "squat",
+      "mood": "intense",
+      "used": false
+    },
+    {
+      "theme": "science",
+      "title_template": "Mind-Blowing ${science_topic} Fact You Never Learned in School",
+      "description_template": "This incredible ${science_topic} discovery will change how you see the world! 🔬 #science #${science_topic} #educational #shorts",
+      "keywords": ["science", "education", "facts", "discovery", "shorts"],
+      "image_prompts": [
+        "Stunning visualization of ${science_topic} concept, educational diagram style, vibrant colors",
+        "Scientist in lab working with equipment related to ${science_topic}, dramatic lighting",
+        "Microscopic view of ${science_topic} phenomenon, highly detailed, scientific accuracy",
+        "Historical illustration of ${science_topic} discovery, vintage scientific drawing style",
+        "Night sky showing astronomical ${science_topic} event, breathtaking cosmic view"
+      ],
+      "science_topic": "astronomy",
+      "mood": "calm",
+      "used": false
+    }
+  ]
