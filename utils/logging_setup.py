@@ -4,6 +4,7 @@ Includes console and file logging with different levels and formatting.
 """
 import os
 import logging
+import sys
 from logging.handlers import RotatingFileHandler
 from rich.logging import RichHandler
 import datetime
@@ -16,9 +17,13 @@ def setup_logging(log_dir="logs", debug=False):
         log_dir (str): Directory to store log files
         debug (bool): Whether to set logging level to DEBUG
     """
-    # Create logs directory if it doesn't exist
+    # Ensure log directory exists
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
+    
+    # Set up UTF-8 encoding for output
+    sys.stdout = open(sys.stdout.fileno(), mode='w', encoding='utf-8', buffering=1)
+    sys.stderr = open(sys.stderr.fileno(), mode='w', encoding='utf-8', buffering=1)
     
     # Determine log level based on debug flag
     console_level = logging.DEBUG if debug else logging.INFO
@@ -37,8 +42,12 @@ def setup_logging(log_dir="logs", debug=False):
         root_logger.removeHandler(handler)
     
     # Create console handler with rich formatting
-    console_handler = RichHandler(level=console_level, rich_tracebacks=True, 
-                                 omit_repeated_times=False, show_path=True)
+    console_handler = RichHandler(
+        level=console_level, 
+        rich_tracebacks=True, 
+        omit_repeated_times=False, 
+        show_path=True
+    )
     console_format = "%(message)s"
     console_formatter = logging.Formatter(console_format)
     console_handler.setFormatter(console_formatter)
@@ -48,7 +57,8 @@ def setup_logging(log_dir="logs", debug=False):
     file_handler = RotatingFileHandler(
         log_filename, 
         maxBytes=10*1024*1024,  # 10 MB
-        backupCount=5
+        backupCount=5,
+        encoding='utf-8'  # Explicitly set UTF-8 encoding
     )
     file_handler.setLevel(file_level)
     file_format = "%(asctime)s - %(name)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s"
@@ -60,7 +70,8 @@ def setup_logging(log_dir="logs", debug=False):
     error_handler = RotatingFileHandler(
         os.path.join(log_dir, f"shorts_automation_errors_{timestamp}.log"),
         maxBytes=5*1024*1024,  # 5 MB
-        backupCount=3
+        backupCount=3,
+        encoding='utf-8'  # Explicitly set UTF-8 encoding
     )
     error_handler.setLevel(logging.ERROR)
     error_handler.setFormatter(file_formatter)

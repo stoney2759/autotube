@@ -1,4 +1,4 @@
-# YouTube Shorts Automation System
+# **WIP YouTube Shorts Automation System (AutoTube)
 
 A fully automated system for generating and uploading YouTube Shorts content without human intervention after initial setup. The system features a visual workflow interface showing the active processes and handles the entire content creation pipeline: generating ideas, creating images, producing videos, adding audio, and uploading to YouTube.
 

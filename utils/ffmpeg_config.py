@@ -2,7 +2,7 @@
 Configure MoviePy to use the correct FFmpeg binary
 """
 import os
-from moviepy.config import change_settings
+import moviepy
 
 def configure_ffmpeg():
     """Configure MoviePy to use the correct FFmpeg path"""
@@ -16,11 +16,16 @@ def configure_ffmpeg():
     if not os.path.exists(ffprobe_path):
         print(f"Warning: FFprobe not found at {ffprobe_path}")
     
-    # Set the paths in MoviePy's configuration
-    change_settings({
-        "FFMPEG_BINARY": ffmpeg_path,
-        "FFPROBE_BINARY": ffprobe_path
-    })
+    # Set the environment variables
+    os.environ['FFMPEG_BINARY'] = ffmpeg_path
+    os.environ['FFPROBE_BINARY'] = ffprobe_path
+    
+    # Update moviepy's config manually if possible
+    try:
+        moviepy.config.FFMPEG_BINARY = ffmpeg_path
+        moviepy.config.FFPROBE_BINARY = ffprobe_path
+    except:
+        pass
     
     print(f"MoviePy configured to use FFmpeg at: {ffmpeg_path}")
     print(f"MoviePy configured to use FFprobe at: {ffprobe_path}")

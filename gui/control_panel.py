@@ -92,14 +92,14 @@ class ControlPanel(QWidget):
         control_layout.addWidget(QLabel("Run Interval (minutes):"), 0, 0)
         self.interval_spin = QSpinBox()
         self.interval_spin.setRange(1, 1440)  # 1 minute to 24 hours
-        self.interval_spin.setValue(60)  # Default to 1 hour
+        self.interval_spin.setValue(1440)  # Default to 1 hour
         control_layout.addWidget(self.interval_spin, 0, 1)
         
         # Content theme
         control_layout.addWidget(QLabel("Content Theme:"), 1, 0)
         self.theme_combo = QComboBox()
         default_themes = self.config.get_config_value("content.default_themes", ["general"])
-        self.theme_combo.addItem("Random")
+        self.theme_combo.addItem("nature")
         for theme in default_themes:
             self.theme_combo.addItem(theme)
         control_layout.addWidget(self.theme_combo, 1, 1)
@@ -107,13 +107,13 @@ class ControlPanel(QWidget):
         # Upload options
         control_layout.addWidget(QLabel("Upload Options:"), 2, 0)
         self.upload_check = QCheckBox("Upload to YouTube")
-        self.upload_check.setChecked(True)
+        self.upload_check.setChecked(False)
         control_layout.addWidget(self.upload_check, 2, 1)
         
         # Cleanup options
         control_layout.addWidget(QLabel("Cleanup:"), 3, 0)
         self.cleanup_check = QCheckBox("Clean up files after completion")
-        self.cleanup_check.setChecked(True)
+        self.cleanup_check.setChecked(False)
         control_layout.addWidget(self.cleanup_check, 3, 1)
         
         control_group.setLayout(control_layout)

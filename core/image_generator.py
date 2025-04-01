@@ -38,32 +38,68 @@ class ImageGenerator:
         """
         self.config = config_loader
         self.file_manager = file_manager
-        self.api_handler = api_handler
         
         # Load configuration
         self.image_count = self.config.get_config_value("image.count_per_video", 5)
         self.image_style = self.config.get_config_value("image.style", "photorealistic")
         self.resolution = self._parse_resolution(
-            self.config.get_config_value("video.resolution", "1080x1920")
+            self.config.get_config_value("video.resolution", "1024x1024")
         )
         
         # Initialize API handler if not provided
-        if not self.api_handler:
-            provider = self.config.get_config_value("image_generation.provider", "stable_diffusion")
+        if not api_handler:
             api_key = self.config.get_api_key("image_generation")
             
             if not api_key:
                 logger.warning("No API key found for image generation. Some features will be limited.")
             
-            api_base = self.config.get_config_value("image_generation.api_base")
-            
-            self.api_handler = ImageGenerationAPIHandler(
-                provider=provider,
-                api_key=api_key,
-                api_base=api_base
-            )
+            # Create API handler without 'provider' argument
+            self.api_handler = ImageGenerationAPIHandler(api_key)
+        else:
+            self.api_handler = api_handler
         
         logger.info("Image generator initialized")
+
+    def preprocess_images_for_video(self, image_paths: List[str], output_dir: str) -> List[str]:
+        """
+        Preprocess images to ensure they're compatible with video creation.
+        This helps avoid "Operation on closed image" errors.
+        
+        Args:
+            image_paths: List of paths to the images
+            output_dir: Directory to save processed images
+            
+        Returns:
+            List of paths to processed images
+        """
+        if not image_paths:
+            return []
+        
+        processed_paths = []
+        
+        for i, img_path in enumerate(image_paths):
+            try:
+                # Create output filename
+                filename = f"processed_{i:02d}.jpg"
+                output_path = os.path.join(output_dir, filename)
+                
+                # Open and process image
+                with Image.open(img_path) as img:
+                    # Convert to RGB (removes alpha channel if present)
+                    if img.mode != 'RGB':
+                        img = img.convert('RGB')
+                    
+                    # Save as JPEG (more compatible with video processing)
+                    img.save(output_path, 'JPEG', quality=95)
+                    
+                    processed_paths.append(output_path)
+                    logger.debug(f"Preprocessed image: {img_path} -> {output_path}")
+            except Exception as e:
+                logger.error(f"Error preprocessing image {img_path}: {str(e)}")
+                # Fall back to original image
+                processed_paths.append(img_path)
+        
+        return processed_paths
     
     def _parse_resolution(self, resolution_str: str) -> Tuple[int, int]:
         """

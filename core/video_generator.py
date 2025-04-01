@@ -9,8 +9,7 @@ import random
 from typing import List, Dict, Any, Optional, Tuple, Union
 import cv2
 import numpy as np
-import moviepy as mpy
-from moviepy import ImageSequenceClip, ImageClip, CompositeVideoClip, TextClip, ColorClip
+from moviepy.editor import ImageSequenceClip, ImageClip, CompositeVideoClip, TextClip, ColorClip, concatenate_videoclips
 from PIL import Image
 
 from utils.error_handling import MediaError, retry, safe_execute
@@ -123,22 +122,28 @@ class VideoGenerator:
         
         # Calculate duration per image
         num_images = len(image_paths)
-        # Subtract transitions (one less than images) from total duration
-        effective_duration = total_duration - transition_duration * (num_images - 1)
-        # Subtract intro and outro durations if used
+        
+        # Intro and outro durations
         intro_duration = 2.0 if add_intro else 0
         outro_duration = 3.0 if add_outro else 0
-        effective_duration -= (intro_duration + outro_duration)
+        
+        # Calculate effective duration for images:
+        # Total - Intro - Outro - Transitions
+        # There are (num_images - 1) transitions between images
+        transition_total = transition_duration * (num_images - 1)
+        effective_duration = total_duration - intro_duration - outro_duration - transition_total
         
         if effective_duration <= 0:
             logger.warning("Not enough duration for all content. Adjusting parameters.")
             transition_duration = 0.5
-            effective_duration = total_duration - transition_duration * (num_images - 1) - (intro_duration + outro_duration)
+            transition_total = transition_duration * (num_images - 1)
+            effective_duration = total_duration - intro_duration - outro_duration - transition_total
+            
             if effective_duration <= 0:
                 # If still not enough time, disable intro/outro
                 intro_duration = outro_duration = 0
                 add_intro = add_outro = False
-                effective_duration = total_duration - transition_duration * (num_images - 1)
+                effective_duration = total_duration - transition_total
         
         # Duration per image should be at least 1 second
         duration_per_image = max(1.0, effective_duration / num_images)
@@ -168,12 +173,12 @@ class VideoGenerator:
                 if captions and i < len(captions) and captions[i]:
                     caption = captions[i]
                     txt_clip = TextClip(caption, fontsize=40, color='white', stroke_color='black',
-                                      stroke_width=1, size=(width * 0.8, None), method='caption')
+                                    stroke_width=1, size=(width * 0.8, None), method='caption')
                     txt_clip = txt_clip.set_position(('center', 'bottom')).set_duration(duration_per_image)
                     
                     # Add background to text for better visibility
                     txt_bg = ColorClip(size=(width, txt_clip.size[1] + 20),
-                                      color=(0, 0, 0), duration=duration_per_image)
+                                    color=(0, 0, 0), duration=duration_per_image)
                     txt_bg = txt_bg.set_opacity(0.6).set_position(('center', 'bottom'))
                     
                     # Composite the image, text background, and text
@@ -185,12 +190,12 @@ class VideoGenerator:
                 if i < num_images - 1:
                     image_clip = image_clip.fadeout(transition_duration/2)
                 
-                # Set start time
+                # Set start time based on previous clips
                 if i == 0:
                     start_time = intro_duration
                 else:
-                    # Each clip starts after previous clip minus half the transition overlap
-                    start_time = intro_duration + i * duration_per_image - i * transition_duration/2
+                    # Each clip starts after the previous clip's duration minus half the transition overlap
+                    start_time = intro_duration + i * duration_per_image - (i * transition_duration/2)
                 
                 image_clip = image_clip.set_start(start_time)
                 clips.append(image_clip)
@@ -201,10 +206,16 @@ class VideoGenerator:
                 outro_clip = self._create_outro_clip(title, outro_duration).set_start(outro_start)
                 clips.append(outro_clip)
             
+            # Calculate final duration
+            final_duration = intro_duration + num_images * duration_per_image - (num_images - 1) * transition_duration/2 + outro_duration
+            
             # Create the final video with all clips
             final_clip = CompositeVideoClip(clips, size=self.resolution)
-            final_duration = intro_duration + num_images * duration_per_image - (num_images - 1) * transition_duration/2 + outro_duration
+            # Explicitly set the final duration to match our calculation
             final_clip = final_clip.set_duration(final_duration)
+            
+            # Log for verification
+            logger.info(f"Final video duration: {final_duration:.2f} seconds (target: {total_duration:.2f})")
             
             # Set the FPS
             final_clip = final_clip.set_fps(self.fps)
@@ -222,7 +233,7 @@ class VideoGenerator:
             
             logger.info(f"Video created successfully: {output_path}")
             return output_path
-        
+            
         except Exception as e:
             logger.error(f"Error creating video: {str(e)}")
             raise MediaError(f"Failed to create video: {str(e)}") from e
@@ -257,7 +268,7 @@ class VideoGenerator:
         if title:
             # Add title text
             title_clip = TextClip(title, fontsize=60, color='white', size=(width * 0.8, None),
-                                method='caption', align='center')
+                                method='caption')
             title_clip = title_clip.set_position('center').set_duration(duration)
             
             # Add fade in animation
@@ -348,7 +359,8 @@ class VideoGenerator:
         """
         try:
             # Load the video clip
-            video = mpy.VideoFileClip(input_path)
+            from moviepy.editor import VideoFileClip
+            video = VideoFileClip(input_path)
             
             # Create a copy of the clip with the transition
             if transition_type == 'fade':
@@ -400,7 +412,8 @@ class VideoGenerator:
         """
         try:
             # Load the video clip
-            video = mpy.VideoFileClip(input_path)
+            from moviepy.editor import VideoFileClip
+            video = VideoFileClip(input_path)
             
             # Apply the specified effects
             for effect in effects:
@@ -533,7 +546,8 @@ class VideoGenerator:
                     return frame[y1:y2, x1:x2]
                 
                 # Create the clip with the effect
-                img_clip = mpy.VideoClip(lambda t: effect_func(orig_img.get_frame, t),
+                from moviepy.editor import VideoClip
+                img_clip = VideoClip(lambda t: effect_func(orig_img.get_frame, t),
                                          duration=duration_per_image)
                 
                 # Add caption if provided
@@ -559,7 +573,7 @@ class VideoGenerator:
                 clips.append(img_clip)
             
             # Concatenate all clips
-            final_clip = mpy.concatenate_videoclips(clips)
+            final_clip = concatenate_videoclips(clips)
             
             # Set the FPS
             final_clip = final_clip.set_fps(self.fps)

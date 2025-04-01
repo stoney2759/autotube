@@ -63,8 +63,8 @@ class ContentGenerator:
             # Check for credentials in api_keys
             gs_creds_file = self.config.get_config_value("content.google_sheets_credentials_file")
             
-            if not gs_creds_file:
-                logger.warning("Google Sheets credentials file not configured. Using local content only.")
+            if not gs_creds_file or not os.path.exists(gs_creds_file):
+                logger.warning("Google Sheets credentials file not found. Google Sheets integration will be disabled.")
                 self.use_google_sheets = False
                 return
             
@@ -80,8 +80,8 @@ class ContentGenerator:
             
             logger.info("Google Sheets API initialized")
         except Exception as e:
-            logger.error(f"Error initializing Google Sheets: {str(e)}")
-            logger.warning("Falling back to local content database")
+            logger.warning(f"Unable to initialize Google Sheets: {str(e)}")
+            logger.info("Google Sheets integration will be disabled.")
             self.use_google_sheets = False
     
     def get_content_idea(self, theme: Optional[str] = None) -> Dict[str, Any]:

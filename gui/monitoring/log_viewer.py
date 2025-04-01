@@ -5,11 +5,12 @@ Displays and filters log messages.
 import os
 import logging
 import time
+import weakref
 from datetime import datetime
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, 
                             QPushButton, QComboBox, QLabel, QCheckBox,
                             QFileDialog, QSpinBox, QLineEdit)
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, pyqtSlot, QObject
 from PyQt5.QtGui import QTextCursor, QColor, QTextCharFormat, QFont
 
 logger = logging.getLogger(__name__)
@@ -19,13 +20,14 @@ class LogViewer(QWidget):
     Log viewer component for displaying and filtering log messages.
     """
     
-    class QtHandler(logging.Handler):
+    class QtHandler(logging.Handler, QObject):
         """Custom logging handler that emits signals with log records."""
         
         log_record_signal = pyqtSignal(object)
         
         def __init__(self):
-            super().__init__()
+            logging.Handler.__init__(self)
+            QObject.__init__(self)
             self.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
         
         def emit(self, record):
@@ -56,6 +58,9 @@ class LogViewer(QWidget):
         self.auto_scroll_timer = QTimer(self)
         self.auto_scroll_timer.timeout.connect(self._auto_scroll)
         self.auto_scroll_timer.start(100)  # Check every 100ms
+        
+        # Keep weak reference to timer
+        self._timer_ref = weakref.ref(self.auto_scroll_timer)
         
         logger.info("Log viewer initialized")
     
@@ -300,3 +305,30 @@ class LogViewer(QWidget):
             level: Logging level
         """
         logger.log(level, message)
+    
+    def cleanup(self):
+        """Clean up resources before object destruction."""
+        try:
+            # Stop the timer
+            timer = self._timer_ref()
+            if timer and timer.isActive():
+                timer.stop()
+            
+            # Remove handler from loggers
+            root_logger = logging.getLogger()
+            if self.log_handler in root_logger.handlers:
+                root_logger.removeHandler(self.log_handler)
+            
+            # Disconnect signals
+            try:
+                self.log_handler.log_record_signal.disconnect()
+            except Exception:
+                pass
+        except Exception:
+            # Swallow exceptions during cleanup
+            pass
+    
+    def closeEvent(self, event):
+        """Handle widget close event."""
+        self.cleanup()
+        super().closeEvent(event)

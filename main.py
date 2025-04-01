@@ -2,11 +2,14 @@
 Main entry point for YouTube Shorts Automation System.
 Initializes the application, loads configuration, and starts the GUI.
 """
+import atexit
 import sys
 import os
 import logging
 import argparse
+import atexit
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QTimer
 
 from gui.main_window import MainWindow
 from utils.logging_setup import setup_logging
@@ -24,10 +27,34 @@ def parse_arguments():
     parser.add_argument("--run-once", action="store_true", help="Run once and exit (for headless mode)")
     return parser.parse_args()
 
+def cleanup_handlers():
+    """Clean up logging handlers to prevent shutdown errors."""
+    try:
+        root_logger = logging.getLogger()
+        for handler in root_logger.handlers[:]:
+            try:
+                # Close each handler if it has a close method
+                if hasattr(handler, 'close'):
+                    handler.close()
+                # Remove it from the logger
+                root_logger.removeHandler(handler)
+            except Exception:
+                # Ignore any errors during cleanup
+                pass
+    except Exception:
+        # Ignore any errors during cleanup
+        pass
+
+# Register cleanup handler
+atexit.register(cleanup_handlers)
+
 def main():
     """Application entry point."""
     # Parse command line arguments
     args = parse_arguments()
+    
+    # Register cleanup handler
+    atexit.register(cleanup_handlers)
     
     # Set up logging
     log_dir = "logs"
@@ -64,12 +91,15 @@ def main():
                 
                 logger.info(f"Workflow execution completed with status: {results['status']}")
                 if results['status'] == 'completed':
-                    sys.exit(0)
+                    # Schedule a clean shutdown
+                    QTimer.singleShot(1000, lambda: sys.exit(0))
                 else:
-                    sys.exit(1)
+                    # Schedule a clean shutdown with error status
+                    QTimer.singleShot(1000, lambda: sys.exit(1))
             except Exception as e:
                 logger.error(f"Workflow execution failed: {str(e)}")
-                sys.exit(1)
+                # Schedule a clean shutdown with error status
+                QTimer.singleShot(1000, lambda: sys.exit(1))
         else:
             # Schedule recurring workflow
             interval = config_loader.get_config_value("workflow.default_interval_minutes", 60)
@@ -104,7 +134,8 @@ def main():
             except KeyboardInterrupt:
                 logger.info("Keyboard interrupt detected, shutting down")
                 scheduler.shutdown()
-                sys.exit(0)
+                # Schedule a clean shutdown
+                QTimer.singleShot(1000, lambda: sys.exit(0))
     else:
         # Initialize GUI application
         app = QApplication(sys.argv)
@@ -121,7 +152,22 @@ def main():
         scheduler.shutdown()
         
         logger.info("Application closed")
-        sys.exit(result)
+        
+        # Allow time for final cleanup and return the result
+        return result
 
 if __name__ == "__main__":
-    main()
+    exit_code = main()
+    sys.exit(exit_code)
+    
+    # Allow some time for cleanup before actually exiting
+    # This can help prevent those exceptions during shutdown
+    QTimer.singleShot(500, lambda: sys.exit(exit_code))
+    
+    # Create an application object for the timer if needed
+    if not QApplication.instance():
+        app = QApplication([])
+        app.exec_()
+    else:
+        # Process events for a short time to allow cleanup
+        QApplication.processEvents()

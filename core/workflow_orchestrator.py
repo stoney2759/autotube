@@ -235,9 +235,9 @@ class WorkflowOrchestrator:
                     video_path = self.video_generator.create_video_from_images(
                         image_paths=image_paths,
                         output_path=video_path,
-                        captions=captions,
-                        add_intro=True,
-                        add_outro=True,
+                        captions=None,
+                        add_intro=False,
+                        add_outro=False,
                         title=idea_with_templates.get("title")
                     )
                 

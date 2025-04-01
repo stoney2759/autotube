@@ -1,7 +1,7 @@
 # YouTube Shorts Automation System Configuration
 
 workflow:
-  default_interval_minutes: 60  # How often to generate videos (in minutes)
+  default_interval_minutes: 1440  # How often to generate videos (in minutes)
   max_videos_per_day: 10  # Maximum number of videos to generate per day
   auto_start: false  # Whether to automatically start workflow on application launch
 
@@ -22,29 +22,33 @@ content:
     - "humor"
 
 video:
-  resolution: "1080x1920"  # Vertical for shorts
+  resolution: "1024x1024"  # Square resolution compatible with DALL-E
   duration_seconds: 60  # Total video duration in seconds
   fps: 30  # Frames per second
   bitrate: "8000k"  # Video bitrate
   style: "standard"  # Video style (standard, ken_burns)
-  add_watermark: true  # Whether to add watermark
+  add_watermark: false  # Whether to add watermark
   transitions: true  # Whether to add transitions between images
   add_intro: true  # Whether to add intro slides
   add_outro: true  # Whether to add outro slides
 
 image:
   count_per_video: 5  # Number of images per video
-  style: "photorealistic"  # Image style (photorealistic, anime, artistic, cinematic, minimalist)
-  negative_prompt: "low quality, blurry, distorted, deformed, disfigured, ugly, bad anatomy"  # Things to avoid in images
+  style: "photorealistic"  # Style for DALL-E
+  generation:
+    provider: "dalle"  # Only DALL-E supported now
+    negative_prompt: "low quality, blurry, distorted, deformed, disfigured, ugly, bad anatomy"  # Things to avoid in images
+    retry_attempts: 3  # Number of retry attempts for image generation
+    retry_delay: 2  # Delay between retry attempts in seconds
 
 audio:
   duration_seconds: 60  # Audio duration in seconds
   fade_in_seconds: 1  # Fade in duration in seconds
   fade_out_seconds: 2  # Fade out duration in seconds
   use_tts: false  # Whether to use text-to-speech
-  tts_voice: "en-US-Standard-D"  # Voice ID for TTS
+  tts_voice: "nova"  # Voice ID for TTS # Voice ID (nova, shimmer, echo, onyx, fable, alloy, ash, sage, or coral)
   provider: "tts"  # Audio provider (tts, music)
-  background_volume: -15  # Background volume adjustment in dB
+  background_volume: 0  # Background volume adjustment in dB
 
 youtube:
   default_category_id: "22"  # 22 is "People & Blogs"

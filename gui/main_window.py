@@ -39,7 +39,7 @@ class MainWindow(QMainWindow):
         self.config = config_loader
         
         # Set window properties
-        self.setWindowTitle("YouTube Shorts Automation")
+        self.setWindowTitle("AutoTube Beta 0.2")
         self.setMinimumSize(1200, 800)
         
         # Create main widget and layout
@@ -324,8 +324,8 @@ class MainWindow(QMainWindow):
         QMessageBox.about(
             self,
             "About YouTube Shorts Automation",
-            "<h1>YouTube Shorts Automation</h1>"
-            "<p>Version 0.1.0</p>"
+            "<h1>AutoTube</h1>"
+            "<p>Version 0.0.2</p>"
             "<p>A fully automated system for generating and uploading YouTube Shorts content.</p>"
             "<p>This application automates the entire content creation pipeline:</p>"
             "<ul>"
